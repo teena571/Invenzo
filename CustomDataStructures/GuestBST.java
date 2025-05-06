@@ -1,17 +1,19 @@
 package CustomDataStructures;
 
-
+//Insert a new guest record.   - 
+//search for a guest by name.
+// display all guest records in alphabetical order.  
 
 public class GuestBST {
 
     public static class GuestNode {
         String guestName;
-        String guestID;
+        int guestID;
         String phoneNumber;
         int roomNumber;
         GuestNode left,right;
     
-        public GuestNode(String guestName,String guestID,String phoneNumber, int roomNumber){
+        public GuestNode(String guestName,int guestID,String phoneNumber, int roomNumber){
             this.guestName=guestName;
             this.guestID=guestID;
             this.phoneNumber=phoneNumber;
@@ -20,7 +22,7 @@ public class GuestBST {
         }
 
         public String getGuestName() { return guestName; }
-        public String getGuestID() { return phoneNumber; }
+        public int getGuestID() { return guestID; }
         public String getPhoneNumber() { return phoneNumber; }
         public int getRoomNumber() { return roomNumber; }
         
@@ -28,7 +30,7 @@ public class GuestBST {
 
     private GuestNode root;
     
-    public void insert(String guestName,String guestID,String phoneNumber,int roomNumber){
+    public void insert(String guestName,int guestID,String phoneNumber,int roomNumber){
         root=insertRec(root, new GuestNode(guestName, guestID, phoneNumber, roomNumber));
     }
 

@@ -4,17 +4,35 @@ import CustomDataStructures.BookingQueue;
 import models.Booking;
 import models.Guest;
 import models.Room;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class BookingService {
     private BookingQueue bookingQueue;
+    private List<Room>rooms;
+    private List<Booking> activeBookings;
 
-    public BookingService(){
-        bookingQueue=new BookingQueue();
+    public BookingService(List<Room> rooms){
+        this.bookingQueue=new BookingQueue();
+        this.activeBookings=new ArrayList<>();
+        this.rooms=rooms;
     }
 
-    public boolean isRoomAvailable(Room room) {
+    public boolean isRoomAvailable(Room room){
         return !room.isBooked();
     }
+
+    public Room getAvailabilityRoomByType(String desiredCategory){
+        for(Room room : rooms){
+            if(room.getCategory().equalsIgnoreCase(desiredCategory) && !room.isBooked()){
+                return room;
+            }
+        }
+        return null;
+    }
+    
     
     public Booking createBooking(Guest guest, Room room) {
         if (!isRoomAvailable(room)) {
@@ -44,5 +62,7 @@ public class BookingService {
         System.out.println("Pending bookings in queue: "+bookingQueue.size());
         bookingQueue.displayQueue();
     }
+
+    
 
 }

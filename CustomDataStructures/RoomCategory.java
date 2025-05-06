@@ -3,6 +3,11 @@ package CustomDataStructures;
 import java.util.ArrayList;
 import java.util.List;
 
+//add categories
+//search categories
+//display all categories
+
+
 public class RoomCategory {
     public static class RoomCategoryNode {
         private String name;

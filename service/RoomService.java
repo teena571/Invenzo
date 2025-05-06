@@ -3,6 +3,10 @@ package service;
 import models.Room;
 import CustomDataStructures.CustomLinkedList;
 
+// add room
+//display all rooms
+//find room by number
+
 public class RoomService {
     private CustomLinkedList<Room> rooms;
     
@@ -22,13 +26,14 @@ public class RoomService {
         }
     }
 
-    public Room findRoomByNumber(int roomNumber){
-        for(int i=0;i<rooms.size();i++){
+    public Room findRoomByType(String roomType) {
+        for (int i = 0; i < rooms.size(); i++) {
             Room room = rooms.get(i);
-            if(room.getRoomNumber() == roomNumber){
-                return room;
+            if (room.getCategory().equalsIgnoreCase(roomType) && !room.isBooked()) {
+                return room; 
             }
         }
-        return null;
+        return null; 
     }
+    
 }

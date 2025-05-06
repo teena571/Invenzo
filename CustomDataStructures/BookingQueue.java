@@ -3,7 +3,7 @@ package CustomDataStructures;
 import models.Booking;
 //The bookingQueue uses a queue data structure to manage bookings in a FIFO.
 // This helps in managing requests in the order they arrive.
-
+// Managing Booking requests during peak time.
 public class BookingQueue {
     private Node front;
     private Node rear;
