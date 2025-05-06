@@ -14,7 +14,6 @@ public class Room {
     public int getRoomNumber(){ return roomNumber; }
     public String getCategory() { return category; }
     public boolean isBooked() { return isBooked; }
-
     public void bookRoom() { this.isBooked = true; }
     public void cancelBooking() { this.isBooked=false; }
 

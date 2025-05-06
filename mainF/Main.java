@@ -34,7 +34,7 @@ public class Main {
         do {
             System.out.println("Select an Option: ");
             System.out.println("1. Check Room Availability by Type");
-            System.out.println("2. View Room Types and Pricing");
+            System.out.println("2. View Room Types");
             System.out.println("3. Book a Room");
             System.out.println("4. Search Guest by Name");
             System.out.println("5. Register New Guest");

@@ -63,6 +63,34 @@ public class BookingService {
         bookingQueue.displayQueue();
     }
 
+    // public boolean checkIn(Guest guest) {
+    //     List<Booking> pendingBookings = bookingQueue.getAllBookings();
+    //     for (Booking booking : pendingBookings) {
+    //         if (booking.getGuest().getId().equals(guest.getId())) {
+    //             activeBookings.add(booking);                      // ✅ Move to active bookings
+    //             bookingQueue.removeBooking(booking);              // ✅ Remove from queue
+    //             System.out.println("Guest " + guest.getName() + " checked in successfully.");
+    //             return true;
+    //         }
+    //     }
+    //     System.out.println(" No pending booking found for guest: " + guest.getName());
+    //     return false;
+    // }
+
+    // public boolean checkOut(Guest guest) {
+    //     for (Booking booking : activeBookings) {
+    //         if (booking.getGuest().getId().equals(guest.getId())) {
+    //             booking.getRoom().setBooked(false);   
+    //             activeBookings.remove(booking);      
+    //             System.out.println("Guest " + guest.getName() + " checked out. Room " +
+    //                 booking.getRoom().getRoomNumber() + " is now available.");
+    //             return true;
+    //         }
+    //     }
+    //     System.out.println(" No active booking found for guest: " + guest.getName());
+    //     return false;
+    // }
+    
     
 
 }

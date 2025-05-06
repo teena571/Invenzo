@@ -1,6 +1,9 @@
 package CustomDataStructures;
 
 import models.Booking;
+import java.util.List;
+import java.util.ArrayList;
+
 //The bookingQueue uses a queue data structure to manage bookings in a FIFO.
 // This helps in managing requests in the order they arrive.
 // Managing Booking requests during peak time.
@@ -68,7 +71,7 @@ public class BookingQueue {
 
     public void displayQueue(){
         if(isEmpty()){
-            System.out.println("No pemding boookings.");
+            System.out.println("No pending boookings.");
             return;
         }
 
@@ -79,4 +82,39 @@ public class BookingQueue {
             current=current.next;
         }
     }
+
+    public List<Booking> getAllBookings(){
+        List<Booking> bookings= new ArrayList<>();
+
+        Node current = front;
+        while(current != null){
+            bookings.add(current.data);
+            current=current.next;
+        }
+        return bookings;
+    }
+
+    public void removeBooking(Booking target) {
+        if (front == null) return;
+    
+        if (front.data.equals(target)) {
+            front = front.next;
+            if (front == null) rear = null;
+            return;
+        }
+    
+        Node prev = front;
+        Node curr = front.next;
+    
+        while (curr != null) {
+            if (curr.data.equals(target)) {
+                prev.next = curr.next;
+                if (curr == rear) rear = prev;
+                return;
+            }
+            prev = curr;
+            curr = curr.next;
+        }
+    }
+    
 }
