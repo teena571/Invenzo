@@ -83,9 +83,18 @@ public class RoomCategory {
     private void displayHierarchyHelper(RoomCategoryNode node,int level){
         if(node == null) return;
         System.out.println("  ".repeat(level) + "- " + node.getName() +
-            " (Capacity: " + node.getCapacity() + ", Price: ₹" + node.getBasePrice() + ")");
+            " (Capacity: " + node.getCapacity() + ", Price: " + node.getBasePrice() + ")");
         for (RoomCategoryNode child : node.getChildren()) {
             displayHierarchyHelper(child, level + 1);
+        }
+    }
+
+    public void displayCategories(){
+        if(root == null || root.getChildren().isEmpty()){
+            System.out.println("No room categories available.");
+        }else {
+            System.out.println("Room Categories: ");
+            displayHierarchy();
         }
     }
 }

@@ -67,8 +67,8 @@ public class BookingService {
     //     List<Booking> pendingBookings = bookingQueue.getAllBookings();
     //     for (Booking booking : pendingBookings) {
     //         if (booking.getGuest().getId().equals(guest.getId())) {
-    //             activeBookings.add(booking);                      // ✅ Move to active bookings
-    //             bookingQueue.removeBooking(booking);              // ✅ Remove from queue
+    //             activeBookings.add(booking);                      
+    //             bookingQueue.removeBooking(booking);              
     //             System.out.println("Guest " + guest.getName() + " checked in successfully.");
     //             return true;
     //         }
