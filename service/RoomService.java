@@ -47,15 +47,18 @@ public class RoomService {
     }
 
     public Room findRoomByNumber(int roomNumber) {
-
         for (int i = 0; i < rooms.size(); i++) {
             Room room = rooms.get(i);
             if (room.getRoomNumber() == roomNumber) {
                 return room;
             }
         }
-
         return null;
+    }
+
+    public boolean isRoomAvailable(int roomNumber) {
+        Room room = findRoomByNumber(roomNumber);
+        return room != null && !room.isBooked();
     }
 
     public void displayRoomCategories() {
@@ -63,7 +66,7 @@ public class RoomService {
     }
 
     public void displayAvailableRoomsByType(String type) {
-        System.out.println("\n Available rooms of type '" + type + "':");
+        System.out.println("\nAvailable rooms of type '" + type + "':");
         boolean found = false;
 
         for (int i = 0; i < rooms.size(); i++) {
@@ -75,7 +78,7 @@ public class RoomService {
         }
 
         if (!found) {
-            System.out.println(" No available rooms of this type.");
+            System.out.println("No available rooms of this type.");
         }
     }
 

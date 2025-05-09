@@ -1,42 +1,59 @@
 package service;
 
-import CustomDataStructures.GuestBST;
 import models.Guest;
+import java.util.List;
 
 // register Guest
 // Search Guest By name;
 
 public class GuestService {
-    private GuestBST guestTree;
+    private StorageService storageService;
 
     public GuestService() {
-        guestTree = new GuestBST();
+        storageService = new StorageService();
     }
 
-    public void registerGuest(String name, int id, String phone, int roomNumber) {
-        guestTree.insert(name, id, phone, roomNumber);
+    public void registerGuest(String name, int id, String contact, int roomNumber) {
+        if (storageService.isGuestIdUsed(id)) {
+            throw new IllegalArgumentException("Guest ID " + id + " is already in use.");
+        }
+        
+        Guest guest = new Guest(id, name, contact);
+        storageService.saveGuest(guest);
         System.out.println("Guest registered: " + name);
     }
 
     public Guest searchGuestByName(String name) {
-        GuestBST.GuestNode guestNode = guestTree.search(name);
-        if (guestNode != null) {
-            System.out.println("Found Guest: ID=" + guestNode.getGuestID() + ", Name=" + guestNode.getGuestName());
-            return new Guest(guestNode.getGuestID(),guestNode.getGuestName(),guestNode.getPhoneNumber());
+        Guest guest = storageService.findGuestByName(name);
+        if (guest != null) {
+            System.out.println("Found Guest: ID=" + guest.getId() + ", Name=" + guest.getName());
+            return guest;
         } else {
             System.out.println("Guest not found.");
             return null;
         }
-    }    
-    
-
-
-    public boolean isGuestRegistered(String name){
-        return guestTree.search(name) != null;
     }
 
-    public void displayAllGuests() {
-        System.out.println("Guest List (Inorder Traversal):");
-        guestTree.inorderTraversal();
+    public Guest searchGuestById(int id) {
+        Guest guest = storageService.findGuestById(id);
+        if (guest != null) {
+            System.out.println("Found Guest: ID=" + guest.getId() + ", Name=" + guest.getName());
+            return guest;
+        } else {
+            System.out.println("Guest not found.");
+            return null;
+        }
+    }
+
+    public boolean isGuestRegistered(String name) {
+        return storageService.findGuestByName(name) != null;
+    }
+
+    public boolean isGuestIdRegistered(int id) {
+        return storageService.isGuestIdUsed(id);
+    }
+
+    public List<Guest> getAllGuests() {
+        return storageService.loadGuests();
     }
 }

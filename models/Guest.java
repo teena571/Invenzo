@@ -1,32 +1,25 @@
 package models;
 
-public class Guest {
+import java.io.Serializable;
+
+public class Guest implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int id;
     private String name;
-    private String contactNumber;
+    private String contact;
 
-    public Guest(int id,String name){
-        this.id=id;
-        this.name=name;
+    public Guest(int id, String name, String contact) {
+        this.id = id;
+        this.name = name;
+        this.contact = contact;
     }
 
-    public Guest(int id,String name,String contactNumber){
-        this.id=id;
-        this.name=name;
-        this.contactNumber=contactNumber;
-    }
- 
     public int getId() { return id; }
     public String getName() { return name; }
-    public String getcontactNumber() { return contactNumber; }
-
-    public void setName(String name) { this.name=name; }
-    public void setContactNumber(String contactNumber) { this.contactNumber=contactNumber; } 
+    public String getContact() { return contact; }
 
     @Override
     public String toString() {
-        return "Guest ID: " + id + ", Name: " + name +
-               (contactNumber != null ? ", Contact: " + contactNumber : "");
+        return "Guest [ID=" + id + ", Name=" + name + ", Contact=" + contact + "]";
     }
-
 }
