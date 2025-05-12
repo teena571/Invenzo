@@ -128,12 +128,32 @@ public class MainWindow extends JFrame {
         JTextField nameField = new JTextField(15);
         panel.add(nameField, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
+        // Add contact field for registration
+        gbc.gridx = 0; gbc.gridy = 3;
+        panel.add(new JLabel("Contact:"), gbc);
+        gbc.gridx = 1;
+        JTextField contactField = new JTextField(15);
+        panel.add(contactField, gbc);
+
+        // Button panel for login and register
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
+        buttonPanel.setBackground(BACKGROUND_COLOR);
+        
         JButton loginButton = new JButton("Login");
         loginButton.setBackground(PRIMARY_COLOR);
         loginButton.setForeground(Color.WHITE);
         loginButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        panel.add(loginButton, gbc);
+        
+        JButton registerButton = new JButton("Register");
+        registerButton.setBackground(SECONDARY_COLOR);
+        registerButton.setForeground(Color.WHITE);
+        registerButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        
+        buttonPanel.add(loginButton);
+        buttonPanel.add(registerButton);
+        
+        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
+        panel.add(buttonPanel, gbc);
 
         loginButton.addActionListener(e -> {
             String idText = idField.getText().trim();
@@ -156,6 +176,48 @@ public class MainWindow extends JFrame {
                 showError("Guest ID must be a number");
             }
         });
+
+        registerButton.addActionListener(e -> {
+            String idText = idField.getText().trim();
+            String name = nameField.getText().trim();
+            String contact = contactField.getText().trim();
+            
+            if (idText.isEmpty() || name.isEmpty() || contact.isEmpty()) {
+                showError("Please fill all fields");
+                return;
+            }
+
+            if (!name.matches("^[a-zA-Z ]+$")) {
+                showError("Name should only contain letters and spaces");
+                return;
+            }
+
+            if (!contact.matches("^[0-9]{10}$")) {
+                showError("Contact number should be 10 digits");
+                return;
+            }
+
+            try {
+                int id = Integer.parseInt(idText);
+                if (guestService.isGuestIdRegistered(id)) {
+                    showError("This ID is already registered");
+                    return;
+                }
+
+                guestService.registerGuest(name, id, contact, 0);
+                showSuccess("Registration successful! You can now login.");
+                
+                // Clear fields
+                idField.setText("");
+                nameField.setText("");
+                contactField.setText("");
+            } catch (NumberFormatException ex) {
+                showError("Please enter a valid ID number");
+            } catch (IllegalArgumentException ex) {
+                showError(ex.getMessage());
+            }
+        });
+
         return panel;
     }
 
@@ -773,42 +835,79 @@ public class MainWindow extends JFrame {
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
 
-        // Results panel
-        JPanel resultsPanel = new JPanel(new BorderLayout());
-        resultsPanel.setBackground(BACKGROUND_COLOR);
-        JTextArea resultsArea = new JTextArea();
-        resultsArea.setEditable(false);
-        resultsArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        JScrollPane scrollPane = new JScrollPane(resultsArea);
-        resultsPanel.add(scrollPane, BorderLayout.CENTER);
+        // Results panel with tabs
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        
+        // Active bookings tab
+        JPanel activeBookingsPanel = new JPanel(new BorderLayout());
+        activeBookingsPanel.setBackground(BACKGROUND_COLOR);
+        JTextArea activeBookingsArea = new JTextArea();
+        activeBookingsArea.setEditable(false);
+        activeBookingsArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        JScrollPane activeScrollPane = new JScrollPane(activeBookingsArea);
+        activeBookingsPanel.add(activeScrollPane, BorderLayout.CENTER);
+        
+        // Waiting list tab
+        JPanel waitingListPanel = new JPanel(new BorderLayout());
+        waitingListPanel.setBackground(BACKGROUND_COLOR);
+        JTextArea waitingListArea = new JTextArea();
+        waitingListArea.setEditable(false);
+        waitingListArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        JScrollPane waitingScrollPane = new JScrollPane(waitingListArea);
+        waitingListPanel.add(waitingScrollPane, BorderLayout.CENTER);
+        
+        tabbedPane.addTab("Active Bookings", activeBookingsPanel);
+        tabbedPane.addTab("Waiting List", waitingListPanel);
 
         searchButton.addActionListener(e -> {
             try {
                 int guestId = Integer.parseInt(searchField.getText().trim());
                 Guest guest = guestService.searchGuestById(guestId);
                 if (guest != null) {
-                    List<Booking> bookings = bookingService.getBookingsByGuest(guest);
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Bookings for Guest: ").append(guest.getName()).append("\n\n");
-                    if (bookings.isEmpty()) {
-                        sb.append("No bookings found for this guest.");
+                    // Display active bookings
+                    List<Booking> activeBookings = bookingService.getBookingsByGuest(guest);
+                    StringBuilder activeSb = new StringBuilder();
+                    activeSb.append("Active Bookings for Guest: ").append(guest.getName()).append("\n\n");
+                    if (activeBookings.isEmpty()) {
+                        activeSb.append("No active bookings found for this guest.");
                     } else {
-                        for (Booking booking : bookings) {
-                            sb.append("Room: ").append(booking.getRoom().getRoomNumber())
-                              .append(" (").append(booking.getRoom().getCategory()).append(")\n");
+                        for (Booking booking : activeBookings) {
+                            activeSb.append("Room: ").append(booking.getRoom().getRoomNumber())
+                                  .append(" (").append(booking.getRoom().getCategory()).append(")\n")
+                                  .append("Check-in: ").append(booking.getCheckInDate())
+                                  .append(" | Check-out: ").append(booking.getCheckOutDate()).append("\n\n");
                         }
                     }
-                    resultsArea.setText(sb.toString());
+                    activeBookingsArea.setText(activeSb.toString());
+                    
+                    // Display waiting list bookings
+                    List<Booking> waitingBookings = bookingService.getWaitingListForGuest(guest);
+                    StringBuilder waitingSb = new StringBuilder();
+                    waitingSb.append("Waiting List for Guest: ").append(guest.getName()).append("\n\n");
+                    if (waitingBookings.isEmpty()) {
+                        waitingSb.append("No waiting list bookings found for this guest.");
+                    } else {
+                        for (Booking booking : waitingBookings) {
+                            waitingSb.append("Room: ").append(booking.getRoom().getRoomNumber())
+                                   .append(" (").append(booking.getRoom().getCategory()).append(")\n")
+                                   .append("Requested Check-in: ").append(booking.getCheckInDate())
+                                   .append(" | Requested Check-out: ").append(booking.getCheckOutDate()).append("\n\n");
+                        }
+                    }
+                    waitingListArea.setText(waitingSb.toString());
                 } else {
-                    resultsArea.setText("Guest not found.");
+                    activeBookingsArea.setText("Guest not found.");
+                    waitingListArea.setText("Guest not found.");
                 }
             } catch (NumberFormatException ex) {
-                resultsArea.setText("Please enter a valid guest ID.");
+                activeBookingsArea.setText("Please enter a valid guest ID.");
+                waitingListArea.setText("Please enter a valid guest ID.");
             }
         });
 
         panel.add(searchPanel, BorderLayout.NORTH);
-        panel.add(resultsPanel, BorderLayout.CENTER);
+        panel.add(tabbedPane, BorderLayout.CENTER);
 
         // Back button
         JButton backButton = new JButton("Back to Main Menu");
