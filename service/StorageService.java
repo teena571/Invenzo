@@ -5,7 +5,7 @@ import java.io.*;
 import java.util.*;
 
 public class StorageService {
-    private static final String GUEST_FILE = "guests.dat";
+    private static final String GUEST_FILE = "guests.txt";
     private static final String BOOKING_FILE = "bookings.dat";
     private static final Set<Integer> usedGuestIds = new HashSet<>();
 
@@ -14,14 +14,22 @@ public class StorageService {
     }
 
     private void loadGuestIds() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(GUEST_FILE))) {
-            List<Guest> guests = (List<Guest>) ois.readObject();
-            for (Guest guest : guests) {
-                usedGuestIds.add(guest.getId());
+        try (BufferedReader reader = new BufferedReader(new FileReader(GUEST_FILE))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length >= 1) {
+                    try {
+                        int id = Integer.parseInt(parts[0].trim());
+                        usedGuestIds.add(id);
+                    } catch (NumberFormatException e) {
+                        System.err.println("Invalid guest ID in file: " + parts[0]);
+                    }
+                }
             }
         } catch (FileNotFoundException e) {
             // File doesn't exist yet, that's okay
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -31,22 +39,43 @@ public class StorageService {
         guests.add(guest);
         usedGuestIds.add(guest.getId());
         
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(GUEST_FILE))) {
-            oos.writeObject(guests);
+        try (PrintWriter writer = new PrintWriter(new FileWriter(GUEST_FILE))) {
+            for (Guest g : guests) {
+                writer.println(String.format("%d,%s,%s", 
+                    g.getId(), 
+                    g.getName(), 
+                    g.getContact()));
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public List<Guest> loadGuests() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(GUEST_FILE))) {
-            return (List<Guest>) ois.readObject();
+        List<Guest> guests = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(GUEST_FILE))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length >= 3) {
+                    try {
+                        int id = Integer.parseInt(parts[0].trim());
+                        String name = parts[1].trim();
+                        String contact = parts[2].trim();
+                        guests.add(new Guest(id, name, contact));
+                    } catch (NumberFormatException e) {
+                        System.err.println("Invalid guest data in file: " + line);
+                    }
+                }
+            }
         } catch (FileNotFoundException e) {
+            // File doesn't exist yet, return empty list
             return new ArrayList<>();
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return new ArrayList<>();
         }
+        return guests;
     }
 
     public boolean isGuestIdUsed(int id) {
