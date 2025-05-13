@@ -847,7 +847,28 @@ public class MainWindow extends JFrame {
         activeBookingsArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         JScrollPane activeScrollPane = new JScrollPane(activeBookingsArea);
         activeBookingsPanel.add(activeScrollPane, BorderLayout.CENTER);
-        
+
+        // Add cancel booking button
+        JButton cancelBookingButton = new JButton("Cancel Selected Booking");
+        cancelBookingButton.setBackground(new Color(231, 76, 60)); // Red color
+        cancelBookingButton.setForeground(Color.WHITE);
+        cancelBookingButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        cancelBookingButton.setEnabled(false);
+        activeBookingsPanel.add(cancelBookingButton, BorderLayout.SOUTH);
+
+        // Add booking selection functionality
+        activeBookingsArea.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                String selectedText = activeBookingsArea.getSelectedText();
+                if (selectedText != null && selectedText.contains("Room:")) {
+                    cancelBookingButton.setEnabled(true);
+                } else {
+                    cancelBookingButton.setEnabled(false);
+                }
+            }
+        });
+
         // Waiting list tab
         JPanel waitingListPanel = new JPanel(new BorderLayout());
         waitingListPanel.setBackground(BACKGROUND_COLOR);
@@ -856,9 +877,74 @@ public class MainWindow extends JFrame {
         waitingListArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         JScrollPane waitingScrollPane = new JScrollPane(waitingListArea);
         waitingListPanel.add(waitingScrollPane, BorderLayout.CENTER);
-        
+
+        // Add refresh button for the waiting list
+        JButton refreshButton = new JButton("Refresh Waiting List");
+        refreshButton.setBackground(PRIMARY_COLOR);
+        refreshButton.setForeground(Color.WHITE);
+        refreshButton.addActionListener(e -> {
+            List<Booking> allWaitingBookings = bookingService.getWaitingListService().getAllWaitingListBookings();
+            StringBuilder waitingSb = new StringBuilder();
+            waitingSb.append("All Waiting List Bookings:\n\n");
+            if (allWaitingBookings.isEmpty()) {
+                waitingSb.append("No bookings in the waiting list.");
+            } else {
+                for (Booking booking : allWaitingBookings) {
+                    waitingSb.append("Guest: ").append(booking.getGuest().getName())
+                           .append(" (ID: ").append(booking.getGuest().getId()).append(")\n")
+                           .append("Room: ").append(booking.getRoom().getRoomNumber())
+                           .append(" (").append(booking.getRoom().getCategory()).append(")\n")
+                           .append("Requested Check-in: ").append(booking.getCheckInDate())
+                           .append(" | Requested Check-out: ").append(booking.getCheckOutDate()).append("\n\n");
+                }
+            }
+            waitingListArea.setText(waitingSb.toString());
+        });
+        waitingListPanel.add(refreshButton, BorderLayout.NORTH);
+
+        // Add tabs to tabbed pane
         tabbedPane.addTab("Active Bookings", activeBookingsPanel);
         tabbedPane.addTab("Waiting List", waitingListPanel);
+
+        // Add cancel booking action
+        cancelBookingButton.addActionListener(e -> {
+            String selectedText = activeBookingsArea.getSelectedText();
+            if (selectedText != null && selectedText.contains("Room:")) {
+                int confirm = JOptionPane.showConfirmDialog(
+                    panel,
+                    "Are you sure you want to cancel this booking?",
+                    "Confirm Cancellation",
+                    JOptionPane.YES_NO_OPTION
+                );
+                
+                if (confirm == JOptionPane.YES_OPTION) {
+                    try {
+                        // Extract room number from selected text
+                        String roomText = selectedText.split("Room:")[1].split("\\(")[0].trim();
+                        int roomNumber = Integer.parseInt(roomText);
+                        
+                        // Find the booking to cancel
+                        Guest guest = guestService.searchGuestById(Integer.parseInt(searchField.getText().trim()));
+                        if (guest != null) {
+                            List<Booking> guestBookings = bookingService.getBookingsByGuest(guest);
+                            for (Booking booking : guestBookings) {
+                                if (booking.getRoom().getRoomNumber() == roomNumber) {
+                                    bookingService.cancelBooking(booking);
+                                    showSuccess("Booking cancelled successfully!");
+                                    
+                                    // Refresh the display
+                                    searchButton.doClick();
+                                    refreshButton.doClick();
+                                    break;
+                                }
+                            }
+                        }
+                    } catch (NumberFormatException ex) {
+                        showError("Error processing booking cancellation");
+                    }
+                }
+            }
+        });
 
         searchButton.addActionListener(e -> {
             try {
