@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.lang.StringBuilder;
 import javax.swing.table.TableCellRenderer;
+import service.WaitingListService;
 
 public class MainWindow extends JFrame {
     private RoomService roomService;
