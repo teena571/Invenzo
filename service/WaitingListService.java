@@ -19,12 +19,26 @@ public class WaitingListService {
     }
 
     private void loadWaitingList() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(WAITING_LIST_FILE))) {
-            waitingList = (Map<Room, Queue<Booking>>) ois.readObject();
+        File file = new File(WAITING_LIST_FILE);
+        if (!file.exists()) {
+            // Create empty waiting list if file doesn't exist
+            waitingList = new HashMap<>();
+            saveWaitingList();
+            return;
+        }
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            Object obj = ois.readObject();
+            if (obj instanceof Map) {
+                waitingList = (Map<Room, Queue<Booking>>) obj;
+            } else {
+                waitingList = new HashMap<>();
+            }
         } catch (FileNotFoundException e) {
-            // File doesn't exist yet, that's okay
+            waitingList = new HashMap<>();
         } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+            System.err.println("Error loading waiting list: " + e.getMessage());
+            waitingList = new HashMap<>();
         }
     }
 
@@ -32,11 +46,15 @@ public class WaitingListService {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(WAITING_LIST_FILE))) {
             oos.writeObject(waitingList);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error saving waiting list: " + e.getMessage());
         }
     }
 
     public void addToWaitingList(Booking booking) {
+        if (booking == null || booking.getRoom() == null) {
+            System.err.println("Invalid booking or room");
+            return;
+        }
         Room room = booking.getRoom();
         waitingList.computeIfAbsent(room, k -> new LinkedList<>()).add(booking);
         booking.setWaiting(true);
@@ -45,10 +63,14 @@ public class WaitingListService {
     }
 
     public void processWaitingList(Room room) {
+        if (room == null) {
+            System.err.println("Invalid room");
+            return;
+        }
         Queue<Booking> queue = waitingList.get(room);
         if (queue != null && !queue.isEmpty()) {
             Booking nextBooking = queue.peek();
-            if (bookingService.isRoomAvailable(room, nextBooking.getCheckInDate(), nextBooking.getCheckOutDate())) {
+            if (nextBooking != null && bookingService.isRoomAvailable(room, nextBooking.getCheckInDate(), nextBooking.getCheckOutDate())) {
                 nextBooking = queue.poll();
                 nextBooking.setWaiting(false);
                 bookingService.createBooking(nextBooking.getGuest(), room, 
@@ -60,15 +82,21 @@ public class WaitingListService {
     }
 
     public List<Booking> getWaitingListForRoom(Room room) {
+        if (room == null) {
+            return new ArrayList<>();
+        }
         Queue<Booking> queue = waitingList.get(room);
         return queue != null ? new ArrayList<>(queue) : new ArrayList<>();
     }
 
     public List<Booking> getWaitingListForGuest(Guest guest) {
+        if (guest == null) {
+            return new ArrayList<>();
+        }
         List<Booking> guestWaitingList = new ArrayList<>();
         for (Queue<Booking> queue : waitingList.values()) {
             for (Booking booking : queue) {
-                if (booking.getGuest().equals(guest)) {
+                if (booking.getGuest() != null && booking.getGuest().equals(guest)) {
                     guestWaitingList.add(booking);
                 }
             }
@@ -77,6 +105,10 @@ public class WaitingListService {
     }
 
     public void removeFromWaitingList(Booking booking) {
+        if (booking == null || booking.getRoom() == null) {
+            System.err.println("Invalid booking or room");
+            return;
+        }
         Queue<Booking> queue = waitingList.get(booking.getRoom());
         if (queue != null) {
             queue.remove(booking);
@@ -88,7 +120,9 @@ public class WaitingListService {
     public List<Booking> getAllWaitingListBookings() {
         List<Booking> allBookings = new ArrayList<>();
         for (Queue<Booking> queue : waitingList.values()) {
-            allBookings.addAll(queue);
+            if (queue != null) {
+                allBookings.addAll(queue);
+            }
         }
         return allBookings;
     }

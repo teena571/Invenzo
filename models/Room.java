@@ -1,6 +1,9 @@
 package models;
 
-public class Room {
+import java.io.Serializable;
+
+public class Room implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int roomNumber;
     private String category;
     private boolean isBooked;
@@ -20,5 +23,18 @@ public class Room {
     @Override
     public String toString(){
         return "Room No. : "+roomNumber+" , Category : "+category+", Status: "+(isBooked ? "Booked" : "Available");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Room room = (Room) o;
+        return roomNumber == room.roomNumber;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(roomNumber);
     }
 }
