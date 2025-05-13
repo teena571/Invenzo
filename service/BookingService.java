@@ -12,13 +12,11 @@ public class BookingService {
     private BookingQueue bookingQueue;
     private List<Room> rooms;
     private List<Booking> activeBookings;
-    private List<Booking> waitingList;
     private WaitingListService waitingListService;
 
     public BookingService(List<Room> rooms) {
         this.bookingQueue = new BookingQueue();
         this.activeBookings = new ArrayList<>();
-        this.waitingList = new ArrayList<>();
         this.rooms = rooms;
         this.waitingListService = new WaitingListService(this);
     }
@@ -55,6 +53,7 @@ public class BookingService {
             Booking waitingBooking = new Booking(guest, room, checkIn, checkOut);
             waitingBooking.setWaiting(true);
             waitingListService.addToWaitingList(waitingBooking);
+            System.out.println("Added booking to waiting list for Room " + room.getRoomNumber());
             return waitingBooking;
         }
     }
@@ -70,23 +69,17 @@ public class BookingService {
     }
 
     public List<Booking> getWaitingList() {
-        return new ArrayList<>(waitingList);
+        List<Booking> allWaitingBookings = new ArrayList<>();
+        for (Room room : rooms) {
+            allWaitingBookings.addAll(waitingListService.getWaitingListForRoom(room));
+        }
+        return allWaitingBookings;
     }
 
     public void processWaitingList() {
-        List<Booking> toRemove = new ArrayList<>();
-        for (Booking waitingBooking : waitingList) {
-            if (isRoomAvailable(waitingBooking.getRoom(), 
-                               waitingBooking.getCheckInDate(), 
-                               waitingBooking.getCheckOutDate())) {
-                // Convert waiting booking to confirmed booking
-                waitingBooking.setWaiting(false);
-                activeBookings.add(waitingBooking);
-                bookingQueue.enqueue(waitingBooking);
-                toRemove.add(waitingBooking);
-            }
+        for (Room room : rooms) {
+            waitingListService.processWaitingList(room);
         }
-        waitingList.removeAll(toRemove);
     }
 
     public void cancelBooking(Booking booking) {
